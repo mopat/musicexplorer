@@ -1,6 +1,5 @@
 MusicExplorer.MainModel = (function() {
 	var that = {},
-        client_id = "41a1b051f38f500beda7c100744fa45a",
 
 	init = function() {
         SC.initialize({
@@ -9,33 +8,17 @@ MusicExplorer.MainModel = (function() {
 	},
 
 	searchTracks = function(query){
-        ajaxQuery(query);
-        function ajaxQuery(query) {
-             $.ajax({
-                url: getScUrl(query),
-                data: {
-                    format: 'json'
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert("ERROR " + errorThrown + " at" + XMLHttpRequest);
-                },
-                dataType: 'json',
-                success: function (data) {
-                    if (data.length != 0) {
-                        $(that).trigger("onSearchComplete", [data]);
-                        console.log("QUERY " , query);
+        SC.get('/tracks', {q: query, filter: 'streamable'}, function (tracks) {
+            console.log(tracks);
+            if (tracks.length === 0)
+                window.alert("No Results found for " + query);
+            else {
+                $(that).trigger("onSearchComplete", [tracks]);
 
-                    }
-                },
-                type: 'GET'
-            });
-        }
-
+            }
+        });
 	},
 
-        getScUrl = function (query) {
-            return "https://api.soundcloud.com/tracks?&q=" + query + "&client_id=" + client_id + "&limit=" + "20";
-        },
 
 	playClickedTrack = function(streamURL){
 		SC.stream(streamURL, {
